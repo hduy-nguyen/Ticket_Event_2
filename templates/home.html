@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sự kiện trực tuyến - Em Zai Ticket</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f0f2f5; color: #333; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+        .header h1 { color: #2c3e50; margin: 0; }
+        .user-info { font-size: 1.1em; }
+        .user-info a { color: #e74c3c; text-decoration: none; font-weight: bold; margin-left: 10px; }
+        .user-info a:hover { text-decoration: underline; }
+        .event-card { background: white; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); transition: transform 0.2s; }
+        .event-card:hover { transform: translateY(-5px); }
+        .category { color: #3498db; font-size: 0.95em; font-weight: bold; margin-bottom: 5px; display: block; }
+        .event-card h2 { margin-top: 5px; margin-bottom: 10px; font-size: 1.6em; }
+        .event-card h2 a { text-decoration: none; color: #2c3e50; }
+        .event-card p { font-size: 1em; color: #666; margin-bottom: 5px; }
+        .event-card b { color: #34495e; }
+        .btn-admin { background: #34495e; color: white; padding: 8px 18px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+        .btn-admin:hover { background: #2c3e50; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Khám phá Sự kiện</h1>
+        <div class="user-info">
+            Chào mừng, <b>{{ username }}</b>! 
+            <a href="/logout">Đăng xuất</a>
+            <a href="/admin" class="btn-admin">Khu vực Quản trị</a>
+        </div>
+    </div>
+    
+    <div>
+        {% for event in events %}
+        <div class="event-card">
+            <span class="category">{{ event.category }}</span>
+            <h2><a href="/event/{{ event.id }}">{{ event.name }}</a></h2>
+            <p>Ngày: {{ event.date }} | Địa điểm: {{ event.location }}</p>
+            <p>Giá từ: <b>{{ event.price_min|format }} VNĐ</b></p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

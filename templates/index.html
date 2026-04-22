@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách sự kiện</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 70px; background-color: #f8f9fa; } /* Increased padding-top for navbar */
+        .container { max-width: 960px; margin: auto; }
+        .event-card {
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform .2s;
+        }
+        .event-card:hover { transform: translateY(-5px); }
+        .card-header { background-color: #007bff; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px; }
+        .card-body { background-color: white; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+        .price { font-weight: bold; color: #28a745; }
+        .location { color: #6c757d; }
+        .navbar-custom .navbar-nav .nav-link { color: white !important; } /* White links */
+        .navbar-custom .navbar-brand { color: white !important; } /* White brand */
+        .navbar-custom .nav-link.active { font-weight: bold; } /* Active link styling */
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">Event Ticket System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if logged_in_user %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'my_tickets' %}active{% endif %}" href="{{ url_for('my_tickets') }}">Vé của tôi</a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="nav-link">Chào, {{ logged_in_user }}!</span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Đăng xuất</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">Đăng nhập</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'register' %}active{% endif %}" href="{{ url_for('register') }}">Đăng ký</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- End Navbar -->
+
+    <div class="container">
+        <!-- Search Bar -->
+        <div class="row mb-4">
+            <div class="col-md-8 offset-md-2">
+                <form action="/" method="GET" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Tìm tên sự kiện hoặc địa điểm..." value="{{ search_query or '' }}">
+                    <button type="submit" class="btn btn-primary">Tìm</button>
+                </form>
+            </div>
+        </div>
+        <!-- End Search Bar -->
+
+        <!-- Gợi ý sự kiện -->
+        {% if recommended_events %}
+        <div class="mb-5">
+            <h3 class="mb-3">Dành riêng cho bạn</h3>
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+                {% for revent in recommended_events %}
+                <div class="col">
+                    <div class="card h-100 border-info">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ revent.name }}</h6>
+                            <p class="card-text small text-muted">{{ revent.location }}</p>
+                            <a href="{{ url_for('buy_ticket', event_id=revent.id) }}" class="btn btn-sm btn-info text-white">Xem ngay</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <hr>
+        {% endif %}
+
+        <!-- Flashed messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <!-- End Flashed messages -->
+
+        <h1 class="text-center mb-4">Sự kiện Sắp Diễn Ra</h1>
+        
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for event in events %}
+            <div class="col">
+                <div class="event-card">
+                    <div class="card-header">
+                        <h5>{{ event.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text location">Địa điểm: {{ event.location }}</p>
+                        <p class="card-text">Ngày: {{ event.event_date or 'Ngẫu nhiên' }}</p>
+                        <p class="card-text">Khách mời: {{ event.guest_list or 'Random' }}</p>
+                        <div class="mt-2 mb-3">
+                            <span class="badge bg-secondary">Standard: {{ "{:,.0f}".format(event.price|float) }} VND</span>
+                            <span class="badge bg-info">VIP: {{ "{:,.0f}".format(event.price|float * 1.5) }} VND</span>
+                            <span class="badge bg-warning text-dark">VVIP: {{ "{:,.0f}".format(event.price|float * 2.5) }} VND</span>
+                        </div>
+                        {% if logged_in_user %}
+                        <a href="{{ url_for('buy_ticket', event_id=event.id) }}" class="btn btn-primary">Mua vé</a>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary">Đăng nhập để mua vé</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-warning text-center" role="alert">
+                    Hiện tại không có sự kiện nào. Vui lòng quay lại sau!
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

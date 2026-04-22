@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.name }} - Chọn ghế</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; color: #333; }
+        .event-header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px dashed #ccc; width: 80%; max-width: 800px; }
+        .event-header h1 { color: #2c3e50; margin-bottom: 10px; }
+        .event-header p { color: #555; font-size: 1.1em; line-height: 1.6; }
+        .stage { width: 300px; height: 40px; background: #34495e; color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 50px; border-radius: 0 0 50px 50px; font-weight: bold; font-size: 1.2em; }
+        .seat { cursor: pointer; transition: all 0.2s; stroke: #fff; stroke-width: 1; }
+        .seat:hover { opacity: 0.8; transform: scale(1.1); }
+        .available { fill: #2ecc71; } /* Xanh lá */
+        .booked { fill: #e74c3c; cursor: not-allowed; } /* Đỏ */
+        .holding { fill: #9b59b6; cursor: wait; } /* Tím */
+        .selected { fill: #f1c40f; stroke: #d35400; stroke-width: 2; } /* Vàng */
+        #info-panel { margin-top: 30px; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 300px; text-align: center; }
+        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 1.05em; }
+        button:hover { background: #2980b9; }
+        .legend { display: flex; gap: 25px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 1.0em; }
+        .box { width: 18px; height: 18px; border-radius: 4px; }
+        svg { border: 1px solid #eee; background: #fafafa; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        a { text-decoration: none; color: #3498db; margin-bottom: 20px; display: block; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <a href="/">← Quay lại danh sách sự kiện</a>
+    <div class="event-header">
+        <h1>{{ event.name }}</h1>
+        <p><b>Ngày:</b> {{ event.date }} | <b>Địa điểm:</b> {{ event.location }}</p>
+        <p><b>Giá từ:</b> {{ event.price_min|format }} VNĐ</p>
+    </div>
+
+    <div class="stage">SÂN KHẤU</div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="box available"></div> Trống</div>
+        <div class="legend-item"><div class="box booked"></div> Đã bán</div>
+        <div class="legend-item"><div class="box holding"></div> Đang giữ chỗ</div>
+        <div class="legend-item"><div class="box selected"></div> Đang chọn</div>
+    </div>
+
+    <svg id="seat-map"></svg>
+
+    <div id="info-panel">
+        <p id="instruction">Vui lòng chọn một ghế để xem thông tin</p>
+        <div id="details" style="display: none;">
+            <p><b>Vị trí:</b> <span id="seat-id"></span></p>
+            <p><b>Giá vé:</b> <span id="seat-price"></span> VNĐ</p>
+            <button id="btn-book">XÁC NHẬN ĐẶT VÉ</button>
+        </div>
+    </div>
+
+    <script>
+        const event_id = "{{ event.id }}";
+        const svg = document.getElementById('seat-map');
+        const infoPanel = document.getElementById('details');
+        const instruction = document.getElementById('instruction');
+        let currentSelectedId = null;
+
+        async function fetchSeats() {
+            const res = await fetch(`/api/seats/${event_id}`);
+            const seats_data = await res.json();
+            renderMap(seats_data);
+        }
+
+        function renderMap(seats_data) {
+            svg.innerHTML = '';
+            let maxRow = 0, maxCol = 0;
+            for (const key in seats_data) {
+                const [row, col] = key.split('-').map(Number);
+                if (row > maxRow) maxRow = row;
+                if (col > maxCol) maxCol = col;
+            }
+            svg.setAttribute("width", (maxCol + 1) * 45); 
+            svg.setAttribute("height", (maxRow + 1) * 40);
+
+            for (const key in seats_data) {
+                const seat = seats_data[key];
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                
+                rect.setAttribute("x", (seat.col || 0) * 45);
+                rect.setAttribute("y", (seat.row || 0) * 40);
+                rect.setAttribute("width", 35);
+                rect.setAttribute("height", 35);
+                rect.setAttribute("rx", 8);
+                rect.dataset.id = key;
+                rect.dataset.price = seat.price;
+                
+                rect.classList.add('seat');
+                if (seat.status === 1) rect.classList.add('booked');
+                else if (seat.status === 2) rect.classList.add('holding');
+                else rect.classList.add('available');
+                
+                rect.onclick = async () => {
+                    if (seat.status !== 0) return; // Chỉ cho phép chọn ghế trống
+                    
+                    document.querySelectorAll('.seat').forEach(s => s.classList.remove('selected'));
+                    rect.classList.add('selected');
+                    
+                    currentSelectedId = key;
+                    instruction.style.display = 'none';
+                    infoPanel.style.display = 'block';
+                    document.getElementById('seat-id').innerText = `Hàng ${seat.row} - Ghế ${seat.col}`;
+                    document.getElementById('seat-price').innerText = seat.price.toLocaleString();
+                };
+
+                svg.appendChild(rect);
+            }
+        }
+
+        document.getElementById('btn-book').onclick = async () => {
+            if (!currentSelectedId) return;
+
+            // Bước 1: Giữ chỗ (Hold)
+            const holdRes = await fetch('/api/hold', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ event_id: event_id, seat_id: currentSelectedId })
+            });
+            const holdData = await holdRes.json();
+            
+            if (!holdData.success) {
+                alert(holdData.message);
+                fetchSeats(); // Cập nhật lại trạng thái ghế
+                return;
+            }
+
+            // Bước 2: Mô phỏng thanh toán và xác nhận đặt (Book)
+            if (confirm(holdData.message + "\nNhấn OK để thanh toán ngay.")) {
+                const bookRes = await fetch('/api/book', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event_id: event_id, seat_id: currentSelectedId })
+                });
+                const bookData = await bookRes.json();
+                alert(bookData.message);
+                
+                if (bookData.success) {
+                    window.location.href = `/ticket/${bookData.ticket_id}`;
+                } else {
+                    fetchSeats(); // Cập nhật lại trạng thái ghế nếu thanh toán thất bại
+                }
+            } else {
+                // Nếu người dùng không thanh toán, ghế sẽ tự động nhả sau 5 phút
+                alert("Bạn đã hủy thanh toán. Ghế sẽ được giải phóng sau ít phút nếu không có người khác đặt.");
+            }
+            
+            infoPanel.style.display = 'none';
+            instruction.style.display = 'block';
+            fetchSeats(); // Cập nhật lại trạng thái ghế
+        };
+
+        fetchSeats();
+    </script>
+</body>
+</html>

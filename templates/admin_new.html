@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Hệ Thống Vé</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .sidebar { min-height: 100vh; background: #343a40; color: white; padding: 20px; }
+        .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); margin-bottom: 20px; }
+        .stats-card { background: linear-gradient(45deg, #007bff, #0056b3); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 sidebar d-none d-md-block">
+                <h4 class="mb-4">Admin Panel</h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link text-white" href="/">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="/logout">Đăng xuất</a></li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+                <h1 class="h2 mb-4">Admin Dashboard</h1>
+
+                <!-- Thống kê doanh thu -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card stats-card p-3">
+                            <h5>Tổng Doanh Thu</h5>
+                            <h2 id="total-revenue">{{ "{:,.0f}".format(total_revenue) }} VNĐ</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 bg-success text-white">
+                            <h5>Vé Đã Bán</h5>
+                            <h2>{{ tickets|length }} vé</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doanh thu theo từng sự kiện -->
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white">Doanh Thu Theo Sự Kiện</div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID Sự Kiện</th>
+                                    <th>Tên Sự Kiện</th>
+                                    <th>Doanh Thu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event_revenue in event_revenues %}
+                                <tr>
+                                    <td>{{ event_revenue.id }}</td>
+                                    <td>{{ event_revenue.event_name }}</td>
+                                    <td>{{ "{:,.0f}".format(event_revenue.event_revenue or 0) }} VNĐ</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Chưa có doanh thu cho sự kiện nào.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Form Thêm Sự Kiện -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">Thêm Sự Kiện Mới</div>
+                    <div class="card-body">
+                        <form action="/add_event" method="POST" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Tên sự kiện</label>
+                                <input type="text" name="name" class="form-control" placeholder="Tên sự kiện" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Địa điểm</label>
+                                <input type="text" name="location" class="form-control" placeholder="Địa điểm" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Giá vé (VNĐ)</label>
+                                <input type="number" name="price" class="form-control" placeholder="Giá vé (VNĐ)" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Loại</label>
+                                <input type="text" name="category" class="form-control" placeholder="Loại (VD: Concert)" value="General">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Khách mời</label>
+                                <input type="text" name="guest_list" class="form-control" placeholder="Khách mời (phẩy ngăn cách)">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Tổng số vé</label>
+                                <input type="number" name="total_slots" class="form-control" value="100" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Ngày diễn ra</label>
+                                <input type="datetime-local" name="event_date" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary w-100">Thêm Sự Kiện</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quản lý Sự Kiện -->
+                <div class="card">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <span>Danh Sách Sự Kiện</span>
+                        <form class="d-flex" action="/admin" method="GET">
+                            <input class="form-control form-control-sm me-2" type="search" name="search" placeholder="Tìm sự kiện..." value="{{ search_query or '' }}">
+                            <button class="btn btn-sm btn-outline-light" type="submit">Tìm</button>
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên</th>
+                                    <th>Địa điểm</th>
+                                    <th>Giá (Standard)</th>
+                                    <th>Giá VIP (1.5x)</th>
+                                    <th>Giá VVIP (2.5x)</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                <tr>
+                                    <td>{{ event.id }}</td>
+                                    <td><a href="{{ url_for('admin_event_detail', event_id=event.id) }}">{{ event.name }}</a></td>
+                                    <td>{{ event.location }}</td>
+                                    <td>{{ "{:,.0f}".format(event.price|float) }} VNĐ</td>
+                                    <td>{{ "{:,.0f}".format(event.price|float * 1.5) }} VNĐ</td>
+                                    <td>{{ "{:,.0f}".format(event.price|float * 2.5) }} VNĐ</td>
+                                    <td>
+                                        <a href="{{ url_for('admin_event_detail', event_id=event.id) }}" class="btn btn-sm btn-info">Chi tiết</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Lịch sử Bán Vé -->
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">Lịch Sử Giao Dịch</div>
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Mã Vé</th>
+                                    <th>Sự Kiện</th>
+                                    <th>Khách Hàng</th>
+                                    <th>Hạng Vé</th>
+                                    <th>Giá Vé</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in tickets %}
+                                <tr>
+                                    <td>{{ ticket.id }}</td>
+                                    <td><code>{{ ticket.ticket_code or 'N/A' }}</code></td>
+                                    <td>{{ ticket.event_name }}</td>
+                                    <td>{{ ticket.username }}</td>
+                                    <td>{{ ticket.ticket_class }}</td>
+                                    <td>{{ "{:,.0f}".format(ticket.ticket_price or 0) }} VNĐ</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

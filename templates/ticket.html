@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vé điện tử của bạn</title>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .ticket-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.15); max-width: 400px; text-align: center; }
+        h1 { color: #2c3e50; margin-bottom: 20px; }
+        p { color: #555; font-size: 1.1em; line-height: 1.6; }
+        .qr-code { margin: 30px auto; border: 4px solid #3498db; padding: 10px; border-radius: 8px; }
+        .btn-home { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; text-decoration: none; display: inline-block; }
+        .btn-home:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+    <div class="ticket-card">
+        <h1>VÉ ĐIỆN TỬ CỦA BẠN</h1>
+        <p>Chúc mừng bạn đã đặt vé thành công!</p>
+        <p><b>Sự kiện:</b> <span id="ticket-event">{{ ticket.event_name }}</span></p>
+        <p><b>Vị trí:</b> <span id="ticket-seat">{{ ticket.seat_id }}</span></p>
+        <p><b>Mã vé:</b> <span id="ticket-id">{{ ticket.ticket_id }}</span></p>
+
+        <div id="qrcode" class="qr-code"></div>
+
+        <a href="/" class="btn-home">Về trang chủ</a>
+    </div>
+
+    <script>
+        const ticketId = document.getElementById('ticket-id').innerText;
+        new QRCode(document.getElementById("qrcode"), ticketId);
+    </script>
+</body>
+</html>

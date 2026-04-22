@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán - {{ event.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .payment-box { max-width: 500px; margin: 50px auto; border-radius: 15px; overflow: hidden; }
+        .qr-mock { width: 200px; height: 200px; background: #eee; margin: 20px auto; display: flex; align-items: center; justify-content: center; border: 2px dashed #ccc; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="card shadow payment-box">
+            <div class="card-header bg-primary text-white text-center">
+                <h4>Xác Nhận Thanh Toán</h4>
+            </div>
+            <div class="card-body text-center">
+                <h5>{{ event.name }}</h5>
+                <p class="text-muted">Hạng vé: <strong>{{ ticket_class }}</strong></p>
+                <h3 class="text-success mb-4">{{ "{:,.0f}".format(price) }} VNĐ</h3>
+                
+                <div class="alert alert-info py-2">
+                    <small>Vui lòng chuyển khoản theo thông tin dưới đây</small>
+                </div>
+                
+                <div class="text-start mb-4">
+                    <p class="mb-1"><strong>Ngân hàng:</strong> MB Bank</p>
+                    <p class="mb-1"><strong>Số tài khoản:</strong> 123456789</p>
+                    <p class="mb-1"><strong>Chủ tài khoản:</strong> DUY TICKET SYSTEM</p>
+                    <p class="mb-1"><strong>Nội dung:</strong> <code>THANHTOAN {{ ticket_code }}</code></p>
+                </div>
+
+                <!-- Giả lập QR chuyển khoản -->
+                <div class="qr-mock">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=THANHTOAN%20{{ ticket_code }}" alt="QR Thanh Toán">
+                </div>
+
+                <form method="POST" action="{{ url_for('complete_payment') }}">
+                    <input type="hidden" name="event_id" value="{{ event.id }}">
+                    <input type="hidden" name="ticket_class" value="{{ ticket_class }}">
+                    <input type="hidden" name="price" value="{{ price }}">
+                    <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
+                    
+                    <button type="submit" class="btn btn-success btn-lg w-100 mb-2">Tôi đã thanh toán</button>
+                    <a href="{{ url_for('index') }}" class="btn btn-link text-muted">Hủy giao dịch</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

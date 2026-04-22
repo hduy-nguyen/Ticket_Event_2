@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Hệ Thống Vé</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .sidebar { min-height: 100vh; background: #343a40; color: white; padding: 20px; }
+        .card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); margin-bottom: 20px; }
+        .stats-card { background: linear-gradient(45deg, #007bff, #0056b3); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 sidebar d-none d-md-block">
+                <h4 class="mb-4">Admin Panel</h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link text-white" href="/">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="/logout">Đăng xuất</a></li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+                <h1 class="h2 mb-4">Admin Dashboard</h1>
+
+                <!-- Thống kê doanh thu -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card stats-card p-3">
+                            <h5>Tổng Doanh Thu</h5>
+                            <h2 id="total-revenue">{{ "{:,.0f}".format(total_revenue) }} VNĐ</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 bg-success text-white">
+                            <h5>Vé Đã Bán</h5>
+                            <h2>{{ tickets|length }} vé</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Thêm Sự Kiện -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">Thêm Sự Kiện Mới</div>
+                    <div class="card-body">
+                        <form action="/add_event" method="POST" class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" name="name" class="form-control" placeholder="Tên sự kiện" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" name="location" class="form-control" placeholder="Địa điểm" required>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" name="price" class="form-control" placeholder="Giá vé (VNĐ)" required>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">Thêm</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Form Chỉnh Sửa Sự Kiện -->
+                <div class="card">
+                    <div class="card-header bg-warning text-white">Chỉnh Sửa Sự Kiện</div>
+                    <div class="card-body">
+                        <form method="POST" action="/admin/edit_event" class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" name="event_id" class="form-control" placeholder="ID Sự Kiện" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" name="name" class="form-control" placeholder="Tên sự kiện">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" name="location" class="form-control" placeholder="Địa điểm">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="date" name="event_date" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" name="price" class="form-control" placeholder="Giá vé (VNĐ)">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-warning w-100">Cập Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quản lý Sự Kiện -->
+                <div class="card">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <span>Danh Sách Sự Kiện</span>
+                        <form class="d-flex" action="/admin" method="GET">
+                            <input class="form-control form-control-sm me-2" type="search" name="search" placeholder="Tìm sự kiện..." value="{{ search_query or '' }}">
+                            <button class="btn btn-sm btn-outline-light" type="submit">Tìm</button>
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên</th>
+                                    <th>Địa điểm</th>
+                                    <th>Giá</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                <tr>
+                                    <td>{{ event.id }}</td>
+                                    <td>{{ event.name }}</td>
+                                    <td>{{ event.location }}</td>
+                                    <td>{{ "{:,d}".format(event.price) }} VNĐ</td>
+                                    <td><a href="/admin/event/{{ event.id }}" class="btn btn-sm btn-info">Chi tiết</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Lịch sử Bán Vé -->
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">Lịch Sử Giao Dịch</div>
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Mã Vé</th>
+                                    <th>Sự Kiện</th>
+                                    <th>Khách Hàng</th>
+                                    <th>Ngày Mua</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in tickets %}
+                                <tr>
+                                    <td><code>{{ ticket.ticket_code }}</code></td>
+                                    <td>{{ ticket.event_name }}</td>
+                                    <td>{{ ticket.username }}</td>
+                                    <td>{{ ticket.purchase_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>
