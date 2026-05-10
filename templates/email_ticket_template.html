@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; padding: 20px; margin: 0;">
+    <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-top: 5px solid #16a085;">
+
+        <h2 style="color: #2c3e50; margin-top: 0;">Xin chào {{ buyer.fullname }},</h2>
+        <p style="color: #333; line-height: 1.6;">Cảm ơn bạn đã tin tưởng và đặt vé tại <strong>EventTicketing</strong>. Thanh toán của bạn đã được xác nhận thành công. Dưới đây là vé điện tử của bạn:</p>
+
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #3498db;">
+            <h3 style="margin: 0 0 10px 0; color: #2980b9; font-size: 1.4rem;">{{ tickets[0].tier.event.title }}</h3>
+            <p style="margin: 5px 0; color: #333;"><strong>📍 Địa điểm:</strong> {{ tickets[0].tier.event.location }}</p>
+            <p style="margin: 5px 0; color: #333;"><strong>📅 Thời gian:</strong> {{ tickets[0].tier.event.start_time.strftime('%H:%M - %d/%m/%Y') }}</p>
+        </div>
+
+        <h3 style="color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px;">Chi tiết mã vé:</h3>
+
+        {% for ticket in tickets %}
+        <div style="border: 2px dashed #bdc3c7; padding: 20px; margin-bottom: 20px; text-align: center; border-radius: 8px; background: #fff;">
+            <div style="display: inline-block; background: #e1f5fe; color: #0288d1; padding: 5px 15px; border-radius: 20px; font-weight: bold; margin-bottom: 15px;">
+                Hạng vé: {{ ticket.tier.tier_name }}
+            </div>
+            <br>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ ticket.id }}" alt="QR Code {{ ticket.id }}" style="border: 1px solid #eee; border-radius: 10px; padding: 10px;">
+
+            <p style="font-size: 1.3rem; font-weight: bold; letter-spacing: 2px; color: #2c3e50; margin: 15px 0 0 0;">Mã vé: {{ ticket.id }}</p>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top: 30px; text-align: center; color: #7f8c8d; font-size: 0.9em; border-top: 1px solid #eee; padding-top: 20px;">
+            <p>Vui lòng xuất trình mã QR này trên điện thoại của bạn cho nhân viên kiểm soát tại cổng sự kiện.</p>
+            <p>Nếu cần hỗ trợ, vui lòng liên hệ hotline: <strong>1900 xxxx</strong>.</p>
+        </div>
+    </div>
+</body>
+</html>

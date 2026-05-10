@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hồ sơ của tôi</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f7f6;
+            padding: 40px;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .user-info {
+            background: #ebf5fb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+
+            .user-info h2 {
+                margin-top: 0;
+                color: #2c3e50;
+                font-size: 1.5rem;
+            }
+
+            .user-info p {
+                margin-bottom: 0;
+                color: #34495e;
+            }
+
+        h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0 30px;
+        }
+
+        label {
+            cursor: pointer;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+            label:hover {
+                background: #e1f5fe;
+                border-color: #81d4fa;
+            }
+
+        input[type="checkbox"] {
+            margin-right: 12px;
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+            button:hover {
+                background: #2980b9;
+            }
+
+        .back-link {
+            margin-left: 15px;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+            .back-link:hover {
+                color: #34495e;
+                text-decoration: underline;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-info">
+            <h2>Xin chào, {{ user.full_name }}!</h2>
+            <p>Email: <strong>{{ user.email }}</strong></p>
+        </div>
+
+        <h3>🎯 Sở thích của bạn</h3>
+        <p style="color: #7f8c8d;">Chọn các thể loại sự kiện bạn quan tâm để chúng tôi gợi ý những chương trình phù hợp nhất nhé:</p>
+
+        <form method="POST">
+            <div class="checkbox-grid">
+                {% for cat in categories %}
+                <label>
+                    <input type="checkbox" name="preferences" value="{{ cat }}"
+                           {% if user.preferences and cat in user.preferences %} checked {% endif %}>
+                    {{ cat }}
+                </label>
+                {% endfor %}
+            </div>
+
+            <button type="submit">Lưu sở thích</button>
+            <a href="/" class="back-link">&larr; Trở về trang chủ</a>
+        </form>
+    </div>
+</body>
+</html>

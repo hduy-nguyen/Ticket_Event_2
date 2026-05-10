@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Giỏ hàng của bạn</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f7f6;
+            margin: 0;
+            color: #333;
+        }
+
+        .navbar {
+            background: white;
+            padding: 15px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+            .navbar a {
+                text-decoration: none;
+                color: #3498db;
+                font-weight: bold;
+            }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-info h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+
+        .item-info p {
+            margin: 0;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: #e74c3c;
+            font-size: 1.3rem;
+        }
+
+        /* Nút Xóa */
+        .btn-delete {
+            background: none;
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+            .btn-delete:hover {
+                background: #e74c3c;
+                color: white;
+            }
+
+        .total-section {
+            text-align: right;
+            margin-top: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .btn-checkout {
+            background: #16a085;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(22, 160, 133, 0.2);
+        }
+
+            .btn-checkout:hover {
+                background: #12876f;
+                transform: translateY(-2px);
+            }
+
+        .empty-cart {
+            text-align: center;
+            padding: 50px 20px;
+            color: #7f8c8d;
+        }
+
+        .btn-explore {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 25px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar"><a href="/">&larr; Tiếp tục mua sắm</a></div>
+
+    <div class="container">
+        <h1>🛒 Giỏ hàng của bạn</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" style="background-color: #fff3cd; color: #856404; padding: 15px; border: 1px solid #ffeeba; border-radius: 5px; margin-bottom: 20px;">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        {% if items %}
+        {% for item in items %}
+        <div class="cart-item">
+            <div class="item-info">
+                <h3>{{ item.tier.event.title }}</h3>
+                <p>🎟️ Hạng vé: <strong>{{ item.tier.tier_name }}</strong></p>
+                <p>🔢 Số lượng: <strong>{{ item.quantity }}</strong></p>
+            </div>
+            <div class="item-actions">
+                <div class="item-price">{{ (item.tier.current_price * item.quantity) | format }}đ</div>
+
+                <form action="/api/cart/remove/{{ item.id }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vé này khỏi giỏ?')">
+                    <button type="submit" class="btn-delete">🗑️ Xóa</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="total-section">
+            Tổng thanh toán: <span style="color: #e74c3c;">{{ total | format }} VNĐ</span>
+        </div>
+
+        <form action="/checkout_info" method="GET">
+            <button type="submit" class="btn-checkout">Tiến hành đặt vé ➔</button>
+        </form>
+        {% else %}
+        <div class="empty-cart">
+            <h2 style="color: #34495e;">Giỏ hàng đang trống!</h2>
+            <p>Chưa có sự kiện nào được thêm vào giỏ. Hãy quay lại trang chủ và khám phá nhé.</p>
+            <a href="/" class="btn-explore">Khám phá sự kiện</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

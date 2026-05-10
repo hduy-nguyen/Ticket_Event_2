@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chỉnh sửa sự kiện</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 40px; margin: 0; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #16a085; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .full-width { grid-column: span 2; }
+        label { font-weight: bold; margin-bottom: 8px; color: #34495e; font-size: 0.95rem; }
+        input, select, textarea { padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: #16a085; outline: none; box-shadow: 0 0 5px rgba(22, 160, 133, 0.2); }
+        .btn-save { background: #16a085; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1.1rem; transition: 0.3s; margin-top: 10px; }
+        .btn-save:hover { background: #12876f; transform: translateY(-2px); }
+        .cancel-link { text-align: center; display: block; margin-top: 20px; color: #7f8c8d; text-decoration: none; font-weight: 500; }
+        .cancel-link:hover { color: #e74c3c; }
+        .section-title { grid-column: span 2; margin: 10px 0 5px 0; padding-top: 10px; border-top: 1px solid #eee; color: #7f8c8d; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📝 Chỉnh sửa: {{ event.title }}</h2>
+        <form method="POST" class="form-grid">
+
+            <div class="form-group full-width">
+                <label>Tên sự kiện</label>
+                <input type="text" name="title" value="{{ event.title }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Danh mục</label>
+                <select name="category">
+                    <option value="Âm nhạc" {% if event.category == 'Âm nhạc' %}selected{% endif %}>Âm nhạc</option>
+                    <option value="Công nghệ" {% if event.category == 'Công nghệ' %}selected{% endif %}>Công nghệ</option>
+                    <option value="Thể thao" {% if event.category == 'Thể thao' %}selected{% endif %}>Thể thao</option>
+                    <option value="Giải trí" {% if event.category == 'Giải trí' %}selected{% endif %}>Giải trí</option>
+                    <option value="Hội thảo" {% if event.category == 'Hội thảo' %}selected{% endif %}>Hội thảo</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Địa điểm</label>
+                <input type="text" name="location" value="{{ event.location }}" required>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Mô tả sự kiện</label>
+                <textarea name="description" rows="4">{{ event.description }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Thời gian Bắt đầu</label>
+                <input type="datetime-local" name="start_time" value="{{ event.start_time.strftime('%Y-%m-%dT%H:%M') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Thời gian Kết thúc</label>
+                <input type="datetime-local" name="end_time" value="{{ event.end_time.strftime('%Y-%m-%dT%H:%M') }}" required>
+            </div>
+
+            <div class="section-title">Thông tin vé & Khách mời</div>
+
+            {% if event.ticket_tiers and event.ticket_tiers|length > 0 %}
+            {% set tier = event.ticket_tiers[0] %}
+            {% else %}
+            {% set tier = {'base_price': 0, 'total_capacity': 0, 'is_dynamic': False, 'min_price': None, 'max_price': None} %}
+            {% endif %}
+
+            <div class="form-group">
+                <label>Giá vé gốc (VNĐ)</label>
+                <input type="number" name="base_price" value="{{ tier.base_price | int }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Tổng số lượng vé</label>
+                <input type="number" name="capacity" value="{{ tier.total_capacity }}" required>
+            </div>
+
+            <hr style="margin: 25px 0; border-top: 1px dashed #ccc;">
+            <p style="text-transform: uppercase; color: #7f8c8d; font-size: 0.85em; font-weight: bold; margin-bottom: 15px;">
+                📈 Cấu hình Giá vé linh hoạt (Dynamic Pricing)
+            </p>
+
+            <div class="form-group full-width" style="margin-bottom: 15px;">
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" name="is_dynamic" value="1" {% if tier.is_dynamic %}checked{% endif %} style="width: 18px; height: 18px;">
+                    <strong style="color: #27ae60;">Kích hoạt tự động điều chỉnh giá (Tăng/giảm theo nhu cầu)</strong>
+                </label>
+            </div>
+
+            <div style="display: flex; gap: 20px; margin-bottom: 20px;" class="full-width">
+                <div style="flex: 1;">
+                    <label>Giá sàn (Không giảm quá)</label>
+                    <input type="number" name="min_price" value="{{ tier.min_price | int if tier.min_price else '' }}" placeholder="Ví dụ: 300000" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div style="flex: 1;">
+                    <label>Giá trần (Không tăng quá)</label>
+                    <input type="number" name="max_price" value="{{ tier.max_price | int if tier.max_price else '' }}" placeholder="Ví dụ: 1000000" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label>🎤 Khách mời / Nghệ sĩ (Ngăn cách bằng dấu phẩy)</label>
+                <input type="text" name="guests" value="{{ current_guests }}" placeholder="Sơn Tùng M-TP, Đen Vâu, Mono...">
+                <small style="color: #7f8c8d; margin-top: 5px;">Hệ thống sẽ tự động cập nhật lại dàn khách mời dựa trên danh sách này.</small>
+            </div>
+
+            <button type="submit" class="btn-save">💾 Lưu tất cả thay đổi</button>
+            <div class="full-width">
+                <a href="/organizer" class="cancel-link">← Hủy bỏ và quay lại</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

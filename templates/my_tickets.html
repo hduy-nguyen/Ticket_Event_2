@@ -1,106 +1,168 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vé của tôi</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { padding-top: 70px; background-color: #f8f9fa; }
-        .container { max-width: 960px; margin: auto; }
-        .event-card { margin-bottom: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .card-header { background-color: #007bff; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px; }
-        .card-body { background-color: white; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
-        .price { font-weight: bold; color: #28a745; }
-        .location { color: #6c757d; }
-        .navbar-custom .navbar-nav .nav-link { color: white !important; }
-        .navbar-custom .navbar-brand { color: white !important; }
-        .navbar-custom .nav-link.active { font-weight: bold; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header-nav {
+            margin-bottom: 30px;
+        }
+
+            .header-nav a {
+                text-decoration: none;
+                color: #3498db;
+                font-weight: bold;
+                background: white;
+                padding: 10px 20px;
+                border-radius: 25px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+
+        .page-title {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        /* === GIAO DIỆN LƯỚI CHO VÉ === */
+        .ticket-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .ticket-card {
+            background: #fff;
+            border: 2px dashed #3498db;
+            border-radius: 15px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .ticket-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+                border-color: #2980b9;
+            }
+
+        .ticket-qr {
+            margin: 20px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #ecf0f1;
+            display: inline-block;
+        }
+
+        .ticket-code {
+            background: #ecf0f1;
+            padding: 8px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.3em;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #2c3e50;
+        }
+
+        .status-valid {
+            color: #27ae60;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+
+        .status-used {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+
+        /* === GIAO DIỆN KHI CHƯA CÓ VÉ === */
+        .empty-state {
+            grid-column: 1 / -1; /* Trải dài hết chiều ngang */
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .btn-explore {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: 0.3s;
+        }
+
+            .btn-explore:hover {
+                background: #2980b9;
+                transform: scale(1.05);
+            }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top navbar-custom">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Event Ticket System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if logged_in_user %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'my_tickets' %}active{% endif %}" href="{{ url_for('my_tickets') }}">Vé của tôi</a>
-                        </li>
-                        <li class="nav-item">
-                            <span class="nav-link">Chào, {{ logged_in_user }}!</span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('logout') }}">Đăng xuất</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">Đăng nhập</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'register' %}active{% endif %}" href="{{ url_for('register') }}">Đăng ký</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <!-- End Navbar -->
-
     <div class="container">
-        <!-- Flashed messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <!-- End Flashed messages -->
+        <div class="header-nav">
+            <a href="/">&larr; Trở về Trang chủ</a>
+        </div>
 
-        <h1 class="text-center mb-4">Vé của bạn</h1>
-        
-        {% if tickets %}
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-            {% for ticket in tickets %}
-            <div class="col">
-                <div class="event-card">
-                    <div class="card-header">
-                        <h5>{{ ticket.name }}</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text location">Địa điểm: {{ ticket.location }}</p>
-                        <p class="card-text">Ngày: {{ ticket.event_date.strftime('%d/%m/%Y') if ticket.event_date else 'Chưa cập nhật' }}</p>
-                        <p class="card-text">Hạng vé: <span class="badge bg-success">{{ ticket.ticket_class }}</span></p>
-                        <p class="card-text">Khách mời: {{ ticket.guest_list or 'Đang cập nhật' }}</p>
-                        <p class="card-text price">Giá: {% if ticket.ticket_price is not none %}{{ "{:,.0f}".format(ticket.ticket_price) }}{% else %}Chưa cập nhật{% endif %} VND</p>
-                        <p class="card-text"><strong>Mã vé:</strong> <code class="text-primary">{{ ticket.ticket_code }}</code></p>
-                        <div class="text-center mt-3">
-                            <img src="{{ url_for('static', filename='qrcodes/ticket_' + (ticket.ticket_code or 'default') + '.png') }}" alt="QR Code" style="max-width: 150px;">
-                        </div>
-                    </div>
+        <h1 class="page-title">🎟️ Kho vé điện tử của tôi</h1>
+
+        <div class="ticket-grid">
+            {# Vòng lặp Jinja2 tự động kiểm tra xem có vé hay không #}
+            {% for ticket in my_tickets %}
+            <div class="ticket-card">
+                <h3 style="margin-top: 0; color: #2c3e50; font-size: 1.4em;">{{ ticket.tier.event.title }}</h3>
+                <p style="color: #7f8c8d; margin-bottom: 5px;">Hạng vé: <strong style="color: #e67e22;">{{ ticket.tier.tier_name }}</strong></p>
+
+                <div class="ticket-qr">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ ticket.id }}" alt="Mã QR Check-in">
                 </div>
+
+                <div class="ticket-code">
+                    {{ ticket.id }}
+                </div>
+
+                {% if ticket.scan_status == 'valid' %}
+                <div class="status-valid">✔ Chưa sử dụng</div>
+                {% else %}
+                <div class="status-used">✖ Đã Check-in</div>
+                {% endif %}
+            </div>
+
+            {% else %}
+            <div class="empty-state">
+                <h2 style="color: #2c3e50; font-size: 2em; margin-top: 0;">🛒 Bạn chưa có vé nào trong kho!</h2>
+                <p style="color: #7f8c8d; font-size: 1.2em;">Hãy tìm kiếm những sự kiện thú vị và đặt vé ngay nhé.</p>
+                <a href="/" class="btn-explore">Khám phá sự kiện ngay</a>
             </div>
             {% endfor %}
         </div>
-        {% else %}
-        <div class="col-12">
-            <div class="alert alert-info text-center" role="alert">
-                Bạn chưa mua sự kiện nào. Hãy quay lại trang chủ để khám phá các sự kiện hấp dẫn!
-            </div>
-        </div>
-        {% endif %}
     </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

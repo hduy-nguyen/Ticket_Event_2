@@ -2,160 +2,297 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ event.name }} - Chọn ghế</title>
+    <title>{{ event.title }}</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; color: #333; }
-        .event-header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px dashed #ccc; width: 80%; max-width: 800px; }
-        .event-header h1 { color: #2c3e50; margin-bottom: 10px; }
-        .event-header p { color: #555; font-size: 1.1em; line-height: 1.6; }
-        .stage { width: 300px; height: 40px; background: #34495e; color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 50px; border-radius: 0 0 50px 50px; font-weight: bold; font-size: 1.2em; }
-        .seat { cursor: pointer; transition: all 0.2s; stroke: #fff; stroke-width: 1; }
-        .seat:hover { opacity: 0.8; transform: scale(1.1); }
-        .available { fill: #2ecc71; } /* Xanh lá */
-        .booked { fill: #e74c3c; cursor: not-allowed; } /* Đỏ */
-        .holding { fill: #9b59b6; cursor: wait; } /* Tím */
-        .selected { fill: #f1c40f; stroke: #d35400; stroke-width: 2; } /* Vàng */
-        #info-panel { margin-top: 30px; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 300px; text-align: center; }
-        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 1.05em; }
-        button:hover { background: #2980b9; }
-        .legend { display: flex; gap: 25px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
-        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 1.0em; }
-        .box { width: 18px; height: 18px; border-radius: 4px; }
-        svg { border: 1px solid #eee; background: #fafafa; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        a { text-decoration: none; color: #3498db; margin-bottom: 20px; display: block; }
-        a:hover { text-decoration: underline; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f7f6;
+            margin: 0;
+            color: #333;
+        }
+
+        .navbar {
+            background: white;
+            padding: 15px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .navbar a {
+                text-decoration: none;
+                color: #3498db;
+                font-weight: bold;
+            }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        .event-info {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .badge {
+            background: #e1f5fe;
+            color: #0288d1;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .title {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin: 15px 0;
+        }
+
+        /* Nút quan tâm */
+        .btn-wishlist {
+            background: none;
+            border: 2px solid #e74c3c;
+            color: #e74c3c;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            margin-bottom: 20px;
+        }
+
+            .btn-wishlist:hover {
+                background: #e74c3c;
+                color: white;
+            }
+
+        .meta-info {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .guests-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .guest-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #6dd5ed, #2193b0);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 50px;
+            margin: 5px 10px 5px 0;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .ticket-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            align-self: start;
+            position: sticky;
+            top: 100px;
+        }
+
+        .tier-card {
+            border: 2px solid #eee;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+
+            .tier-card:hover {
+                border-color: #3498db;
+                transform: scale(1.02);
+            }
+
+        .tier-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .tier-price {
+            color: #e74c3c;
+            font-size: 1.4rem;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .btn-cart {
+            background: #f39c12;
+            color: white;
+            width: 100%;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+            .btn-cart:hover {
+                background: #e67e22;
+            }
+
+            .btn-cart:disabled {
+                background: #bdc3c7;
+                cursor: not-allowed;
+            }
+
+        .cart-link-nav {
+            background: #3498db;
+            color: white !important;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
-    <a href="/">← Quay lại danh sách sự kiện</a>
-    <div class="event-header">
-        <h1>{{ event.name }}</h1>
-        <p><b>Ngày:</b> {{ event.date }} | <b>Địa điểm:</b> {{ event.location }}</p>
-        <p><b>Giá từ:</b> {{ event.price_min|format }} VNĐ</p>
+    <div class="navbar">
+        <a href="/">&larr; Trở về Trang chủ</a>
+        <a href="/cart" class="cart-link-nav">🛒 Giỏ hàng</a>
     </div>
 
-    <div class="stage">SÂN KHẤU</div>
+    <div class="container">
+        <div class="event-info">
+            <span class="badge">{{ event.category }}</span>
+            <h1 class="title">{{ event.title }}</h1>
 
-    <div class="legend">
-        <div class="legend-item"><div class="box available"></div> Trống</div>
-        <div class="legend-item"><div class="box booked"></div> Đã bán</div>
-        <div class="legend-item"><div class="box holding"></div> Đang giữ chỗ</div>
-        <div class="legend-item"><div class="box selected"></div> Đang chọn</div>
-    </div>
+            <button class="btn-wishlist" onclick="toggleWishlist({{ event.id }})">❤️ Thêm vào danh sách quan tâm</button>
 
-    <svg id="seat-map"></svg>
+            <div class="meta-info">
+                📍 <strong>Địa điểm:</strong> {{ event.location }}<br>
+                📅 <strong>Bắt đầu:</strong> {{ event.start_time.strftime('%H:%M - %d/%m/%Y') }}<br>
+                🏁 <strong>Kết thúc:</strong> {{ event.end_time.strftime('%H:%M - %d/%m/%Y') }}
+            </div>
 
-    <div id="info-panel">
-        <p id="instruction">Vui lòng chọn một ghế để xem thông tin</p>
-        <div id="details" style="display: none;">
-            <p><b>Vị trí:</b> <span id="seat-id"></span></p>
-            <p><b>Giá vé:</b> <span id="seat-price"></span> VNĐ</p>
-            <button id="btn-book">XÁC NHẬN ĐẶT VÉ</button>
+            <h3>Chi tiết sự kiện</h3>
+            <p style="line-height: 1.6; white-space: pre-line;">{{ event.description or 'Chưa có mô tả chi tiết cho sự kiện này.' }}</p>
+
+            {% if event.guests %}
+            <div class="guests-section">
+                <h3>🎤 Khách mời nổi bật</h3>
+                {% for guest in event.guests %}
+                <div class="guest-tag">
+                    <strong>{{ guest.name }}</strong>
+                    <span style="font-size:0.85em; opacity: 0.9;"> - {{ guest.role }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="ticket-box">
+            <h2 style="margin-top:0;">Chọn hạng vé</h2>
+
+            {% if event.ticket_tiers %}
+            {% for tier in event.ticket_tiers %}
+            <div class="tier-card">
+                <div class="tier-name">{{ tier.tier_name }}</div>
+                <div class="tier-price">{{ tier.current_price | format }}đ</div>
+                <div class="tier-status">Còn lại: {{ tier.total_capacity - tier.sold_quantity }} vé</div>
+
+                {% if tier.is_dynamic %}
+                <div style="margin: 10px 0;">
+                    {% if tier.current_price > tier.base_price %}
+                    <div style="color: #c0392b; font-size: 0.8em; font-weight: bold; background-color: #fadbd8; padding: 5px 10px; border-radius: 6px; border: 1px solid #f5b7b1; display: block; line-height: 1.4;">
+                        🔥 HOT: Giá đã tăng nhẹ do nhu cầu cao. Mua ngay kẻo lỡ!
+                    </div>
+                    {% elif tier.current_price < tier.base_price %}
+                    <div style="color: #27ae60; font-size: 0.8em; font-weight: bold; background-color: #d5f5e3; padding: 5px 10px; border-radius: 6px; border: 1px solid #abebc6; display: block; line-height: 1.4;">
+                        ⏰ ƯU ĐÃI: Đang áp dụng giá mua sớm. Đặt ngay để giữ giá tốt!
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if tier.sold_quantity < tier.total_capacity %}
+                <div style="margin: 15px 0; display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                    <label for="qty-{{ tier.id }}" style="font-weight: bold; color: #2c3e50; margin: 0;">Số lượng:</label>
+                    <input type="number" id="qty-{{ tier.id }}" value="1" min="1" max="{{ tier.total_capacity - tier.sold_quantity }}"
+                           style="width: 70px; padding: 8px; border-radius: 6px; border: 1px solid #bdc3c7; text-align: center; font-size: 1.1em; font-weight: bold;">
+                    <span style="font-size: 0.85em; color: #7f8c8d;">vé</span>
+                </div>
+
+                <button class="btn-cart" onclick="addToCart({{ tier.id }})">
+                    <span>🛒 Thêm vào giỏ</span>
+                </button>
+                {% else %}
+                <button class="btn-cart" disabled>Hết vé</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <p style="color: #e74c3c;">Sự kiện này chưa mở bán vé.</p>
+            {% endif %}
+
+            <p style="font-size: 0.8rem; color: #95a5a6; margin-top: 20px;">* Giá vé có thể thay đổi tùy theo số lượng vé còn lại.</p>
         </div>
     </div>
 
     <script>
-        const event_id = "{{ event.id }}";
-        const svg = document.getElementById('seat-map');
-        const infoPanel = document.getElementById('details');
-        const instruction = document.getElementById('instruction');
-        let currentSelectedId = null;
+        // Hàm thêm vào giỏ hàng
+        function addToCart(tierId) {
 
-        async function fetchSeats() {
-            const res = await fetch(`/api/seats/${event_id}`);
-            const seats_data = await res.json();
-            renderMap(seats_data);
-        }
+            const quantityInput = document.getElementById(`qty-${tierId}`);
+            const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
 
-        function renderMap(seats_data) {
-            svg.innerHTML = '';
-            let maxRow = 0, maxCol = 0;
-            for (const key in seats_data) {
-                const [row, col] = key.split('-').map(Number);
-                if (row > maxRow) maxRow = row;
-                if (col > maxCol) maxCol = col;
-            }
-            svg.setAttribute("width", (maxCol + 1) * 45); 
-            svg.setAttribute("height", (maxRow + 1) * 40);
-
-            for (const key in seats_data) {
-                const seat = seats_data[key];
-                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                
-                rect.setAttribute("x", (seat.col || 0) * 45);
-                rect.setAttribute("y", (seat.row || 0) * 40);
-                rect.setAttribute("width", 35);
-                rect.setAttribute("height", 35);
-                rect.setAttribute("rx", 8);
-                rect.dataset.id = key;
-                rect.dataset.price = seat.price;
-                
-                rect.classList.add('seat');
-                if (seat.status === 1) rect.classList.add('booked');
-                else if (seat.status === 2) rect.classList.add('holding');
-                else rect.classList.add('available');
-                
-                rect.onclick = async () => {
-                    if (seat.status !== 0) return; // Chỉ cho phép chọn ghế trống
-                    
-                    document.querySelectorAll('.seat').forEach(s => s.classList.remove('selected'));
-                    rect.classList.add('selected');
-                    
-                    currentSelectedId = key;
-                    instruction.style.display = 'none';
-                    infoPanel.style.display = 'block';
-                    document.getElementById('seat-id').innerText = `Hàng ${seat.row} - Ghế ${seat.col}`;
-                    document.getElementById('seat-price').innerText = seat.price.toLocaleString();
-                };
-
-                svg.appendChild(rect);
-            }
-        }
-
-        document.getElementById('btn-book').onclick = async () => {
-            if (!currentSelectedId) return;
-
-            // Bước 1: Giữ chỗ (Hold)
-            const holdRes = await fetch('/api/hold', {
+            fetch('/api/cart/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ event_id: event_id, seat_id: currentSelectedId })
-            });
-            const holdData = await holdRes.json();
-            
-            if (!holdData.success) {
-                alert(holdData.message);
-                fetchSeats(); // Cập nhật lại trạng thái ghế
-                return;
-            }
+                body: JSON.stringify({ tier_id: tierId, quantity: quantity })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (confirm(`Đã thêm ${quantity} vé vào giỏ hàng! Bạn có muốn đi đến giỏ hàng không?`)) {
+                            window.location.href = "/cart";
+                        }
+                    } else {
+                        alert("Lỗi: " + data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
 
-            // Bước 2: Mô phỏng thanh toán và xác nhận đặt (Book)
-            if (confirm(holdData.message + "\nNhấn OK để thanh toán ngay.")) {
-                const bookRes = await fetch('/api/book', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ event_id: event_id, seat_id: currentSelectedId })
-                });
-                const bookData = await bookRes.json();
-                alert(bookData.message);
-                
-                if (bookData.success) {
-                    window.location.href = `/ticket/${bookData.ticket_id}`;
-                } else {
-                    fetchSeats(); // Cập nhật lại trạng thái ghế nếu thanh toán thất bại
-                }
-            } else {
-                // Nếu người dùng không thanh toán, ghế sẽ tự động nhả sau 5 phút
-                alert("Bạn đã hủy thanh toán. Ghế sẽ được giải phóng sau ít phút nếu không có người khác đặt.");
-            }
-            
-            infoPanel.style.display = 'none';
-            instruction.style.display = 'block';
-            fetchSeats(); // Cập nhật lại trạng thái ghế
-        };
-
-        fetchSeats();
+        // Hàm quan tâm sự kiện
+        function toggleWishlist(eventId) {
+            fetch('/api/wishlist/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ event_id: eventId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => console.error('Error:', error));
+        }
     </script>
 </body>
 </html>

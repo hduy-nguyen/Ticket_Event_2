@@ -2,52 +2,141 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanh Toán - {{ event.name }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Thanh toán vé</title>
     <style>
-        .payment-box { max-width: 500px; margin: 50px auto; border-radius: 15px; overflow: hidden; }
-        .qr-mock { width: 200px; height: 200px; background: #eee; margin: 20px auto; display: flex; align-items: center; justify-content: center; border: 2px dashed #ccc; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .payment-container {
+            background: white;
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        .info-box {
+            background: #e8f5e9;
+            border-left: 5px solid #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+            color: #2e7d32;
+        }
+
+        .amount-box {
+            margin: 20px 0;
+        }
+
+            .amount-box p {
+                color: #7f8c8d;
+                margin: 0 0 5px 0;
+                font-size: 1rem;
+            }
+
+        .amount {
+            color: #e74c3c;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .qr-wrapper {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 25px;
+            border: 2px dashed #bdc3c7;
+        }
+
+            .qr-wrapper img {
+                width: 250px;
+                border-radius: 10px;
+                mix-blend-mode: multiply;
+            }
+
+        .btn-confirm {
+            background: #16a085;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(22, 160, 133, 0.3);
+        }
+
+            .btn-confirm:hover {
+                background: #12876f;
+                transform: translateY(-2px);
+            }
+
+        .btn-back {
+            display: block;
+            margin-top: 15px;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+            .btn-back:hover {
+                color: #e74c3c;
+            }
     </style>
 </head>
-<body class="bg-light">
-    <div class="container">
-        <div class="card shadow payment-box">
-            <div class="card-header bg-primary text-white text-center">
-                <h4>Xác Nhận Thanh Toán</h4>
-            </div>
-            <div class="card-body text-center">
-                <h5>{{ event.name }}</h5>
-                <p class="text-muted">Hạng vé: <strong>{{ ticket_class }}</strong></p>
-                <h3 class="text-success mb-4">{{ "{:,.0f}".format(price) }} VNĐ</h3>
-                
-                <div class="alert alert-info py-2">
-                    <small>Vui lòng chuyển khoản theo thông tin dưới đây</small>
-                </div>
-                
-                <div class="text-start mb-4">
-                    <p class="mb-1"><strong>Ngân hàng:</strong> MB Bank</p>
-                    <p class="mb-1"><strong>Số tài khoản:</strong> 123456789</p>
-                    <p class="mb-1"><strong>Chủ tài khoản:</strong> DUY TICKET SYSTEM</p>
-                    <p class="mb-1"><strong>Nội dung:</strong> <code>THANHTOAN {{ ticket_code }}</code></p>
-                </div>
+<body>
 
-                <!-- Giả lập QR chuyển khoản -->
-                <div class="qr-mock">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=THANHTOAN%20{{ ticket_code }}" alt="QR Thanh Toán">
-                </div>
+    <div class="payment-container">
+        <h2>Quét mã để thanh toán</h2>
 
-                <form method="POST" action="{{ url_for('complete_payment') }}">
-                    <input type="hidden" name="event_id" value="{{ event.id }}">
-                    <input type="hidden" name="ticket_class" value="{{ ticket_class }}">
-                    <input type="hidden" name="price" value="{{ price }}">
-                    <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
-                    
-                    <button type="submit" class="btn btn-success btn-lg w-100 mb-2">Tôi đã thanh toán</button>
-                    <a href="{{ url_for('index') }}" class="btn btn-link text-muted">Hủy giao dịch</a>
-                </form>
+        <div class="info-box">
+            <strong style="font-size: 1.1rem;">🎟️ Thông tin nhận vé:</strong><br>
+            <div style="margin-top: 8px;">
+                👤 Họ tên: <strong>{{ buyer_info.fullname }}</strong><br>
+                ✉️ Email: <strong style="text-decoration: underline;">{{ buyer_info.email }}</strong>
             </div>
+            <small style="display: block; margin-top: 8px; opacity: 0.8;">* Vé điện tử sẽ được gửi về địa chỉ Email này.</small>
         </div>
+
+        <div class="amount-box">
+            <p>Tổng số tiền cần thanh toán</p>
+            <div class="amount">{{ amount | format }}đ</div>
+        </div>
+
+        <div class="qr-wrapper">
+            <img src="{{ qr_url }}" alt="Mã QR Thanh toán">
+            <p style="color: #7f8c8d; margin-top: 15px; font-size: 0.9rem; margin-bottom: 0;">Mở ứng dụng ngân hàng để quét mã</p>
+        </div>
+
+        <form action="/api/confirm_payment" method="POST">
+            <button type="submit" class="btn-confirm">✅ Tôi đã thanh toán thành công</button>
+        </form>
+
+        <a href="/checkout_info" class="btn-back">← Sửa lại thông tin nhận vé</a>
     </div>
+
 </body>
 </html>
